@@ -1,4 +1,4 @@
-// Isi dua nilai ini dari Supabase (Project Settings > API). Cukup diisi di sini.
-const SUPABASE_URL = "ISI_PROJECT_URL_ANDA";
-const SUPABASE_KEY = "ISI_ANON_ATAU_PUBLISHABLE_KEY_ANDA";
+// Konfigurasi koneksi Supabase (kunci publik/anon, aman dipakai di browser).
+const SUPABASE_URL = "https://xzimuaakwtaasentzhgq.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6aW11YWFrd3RhYXNlbnR6aGdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0NDY2OTQsImV4cCI6MjEwNzAyMjY5NH0.JqOVWJJ03kxZZ2ZPW2h8e9teD8CADicRyoE4eYQZWsQ";
 const EMAIL_DOMAIN = "ecolum.local";   // username "admin" -> admin@ecolum.local
