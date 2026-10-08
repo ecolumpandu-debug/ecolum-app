@@ -77,13 +77,9 @@ input:focus-visible,button:focus-visible{outline:3px solid var(--ring);outline-o
   </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 <script>
-// ====== ISI DUA NILAI INI DARI SUPABASE (Project Settings > API) ======
-const SUPABASE_URL = "ISI_PROJECT_URL_ANDA";
-const SUPABASE_KEY = "ISI_ANON_ATAU_PUBLISHABLE_KEY_ANDA";
-const EMAIL_DOMAIN = "ecolum.local";      // username "admin" -> admin@ecolum.local
-const HALAMAN_TUJUAN = "dashboard.html";  // halaman setelah login berhasil
-// =====================================================================
+const HALAMAN_TUJUAN = "index.html";  // halaman setelah login berhasil
 
 const configured = !SUPABASE_URL.startsWith("ISI_") && !SUPABASE_KEY.startsWith("ISI_");
 const sb = configured ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
@@ -97,7 +93,7 @@ f.addEventListener('submit',async e=>{
   e.preventDefault(); m.className='msg';
   const username=u.value.trim().toLowerCase();
   if(!username||!p.value){m.textContent='Username dan password wajib diisi.';return}
-  if(!sb){m.textContent='Koneksi database belum diatur. Isi SUPABASE_URL dan SUPABASE_KEY di file ini.';return}
+  if(!sb){m.textContent='Koneksi database belum diatur. Isi SUPABASE_URL dan SUPABASE_KEY di config.js.';return}
   btn.disabled=true; btn.textContent='Memeriksa...';
   const email = username.includes('@') ? username : username+'@'+EMAIL_DOMAIN;
   const {error}=await sb.auth.signInWithPassword({email,password:p.value});
