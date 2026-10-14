@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecolum Manufacture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- 1. MEMANGGIL FILE CSS EKSTERNAL (Pengganti include css) -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-100">
+
+    <div id="loading-overlay" style="display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column;">
+        <div class="spinner mb-4" style="border: 4px solid #f3f3f3; border-top: 4px solid #4f46e5; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
+        <p id="loading-text" class="text-gray-600 font-semibold">Memproses...</p>
+    </div>
+    <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+
+    <!-- HALAMAN LOGIN -->
+    <div id="login-section" class="min-h-screen flex items-center justify-center bg-gray-200 w-full absolute z-50">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-96 text-center">
+            <div class="text-indigo-600 text-5xl mb-4"><i class="fas fa-leaf"></i></div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-1">Ecolum Manufacture</h2>
+            <p class="text-sm text-gray-500 mb-6">Sistem Manajemen ERP Terpadu</p>
+            <div class="mb-4 text-left"><label class="block text-sm font-semibold text-gray-600 mb-1">Username</label><input type="text" id="username" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-indigo-500" value="admin" autocomplete="off"></div>
+            <div class="mb-6 text-left"><label class="block text-sm font-semibold text-gray-600 mb-1">Password</label><input type="password" id="password" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-indigo-500" value="admin"></div>
+            <button onclick="doLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded shadow-lg transition">Masuk Workspace</button>
+        </div>
+    </div>
+
+    <!-- APLIKASI UTAMA -->
+    <div id="app-section" class="flex h-screen overflow-hidden hidden">
+        <!-- SIDEBAR -->
+        <div id="sidebar" class="w-64 bg-gray-800 text-white flex flex-col no-print">
+            <div class="p-5 flex items-center border-b border-gray-700"><i class="fas fa-leaf text-green-400 text-2xl mr-3"></i><span class="text-xl font-bold tracking-wide">Ecolum</span></div>
+            
+            <div class="flex-1 overflow-y-auto py-4 text-sm">
+                <a href="#" onclick="showMenu('Dashboard')" class="block px-5 py-3 hover:bg-gray-700 menu-item"><i class="fas fa-chart-pie w-6 text-indigo-400"></i> Dashboard</a>
+                <a href="#" onclick="showMenu('Stok')" class="block px-5 py-3 hover:bg-gray-700 menu-item"><i class="fas fa-boxes w-6 text-green-400"></i> Manajemen Stok</a>
+
+                <div class="px-5 py-3 text-xs text-gray-400 uppercase font-bold tracking-wider bg-gray-900 mt-2"><i class="fas fa-project-diagram mr-1"></i> Data Project</div>
+                <a href="#" onclick="showMenu('Project')" class="block pl-8 pr-5 py-2.5 hover:bg-gray-700 menu-item"><i class="fas fa-list w-5 text-gray-400"></i> Daftar Project</a>
+                <a href="#" onclick="showMenu('RAP_Awal')" class="block pl-8 pr-5 py-2.5 hover:bg-gray-700 menu-item"><i class="fas fa-file-invoice-dollar w-5 text-gray-400"></i> RAP Awal</a>
+                <a href="#" onclick="showMenu('RAP_Belanja')" class="block pl-8 pr-5 py-2.5 hover:bg-gray-700 menu-item"><i class="fas fa-shopping-cart w-5 text-gray-400"></i> RAP Belanja</a>
+                <a href="#" onclick="showMenu('RAP_Final')" class="block pl-8 pr-5 py-2.5 hover:bg-gray-700 menu-item"><i class="fas fa-file-contract w-5 text-gray-400"></i> RAP Final</a>
+
+                <div class="px-5 py-3 text-xs text-gray-400 uppercase font-bold tracking-wider bg-gray-900 mt-2"><i class="fas fa-database mr-1"></i> Data Master</div>
+                <a href="#" onclick="showMenu('Master_Material')" class="block pl-8 pr-5 py-2.5 hover:bg-gray-700 menu-item"><i class="fas fa-box w-5 text-gray-400"></i> Material</a>
+                <a href="#" onclick="showMenu('Master_Jasa')" class="block pl-8 pr-5 py-2.5 hover:bg-gray-700 menu-item"><i class="fas fa-users w-5 text-gray-400"></i> Jasa</a>
+                <a href="#" onclick="showMenu('Master_Operasional')" class="block pl-8 pr-5 py-2.5 hover:bg-gray-700 menu-item"><i class="fas fa-truck w-5 text-gray-400"></i> Operasional</a>
+            </div>
+
+            <!-- PROFIL USER & LOGOUT -->
+            <div class="p-4 border-t border-gray-700 bg-gray-900">
+                <div class="flex items-center mb-3">
+                    <div id="user-initial" class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-inner mr-3">U</div>
+                    <div class="overflow-hidden">
+                        <div id="user-name" class="text-sm font-bold text-white truncate">User</div>
+                        <div id="user-role" class="text-xs text-gray-400 truncate">Administrator</div>
+                    </div>
+                </div>
+                <button onclick="logout()" class="w-full bg-gray-800 hover:bg-red-600 border border-gray-700 hover:border-red-600 transition-colors text-gray-300 hover:text-white text-sm py-2 rounded shadow"><i class="fas fa-sign-out-alt mr-2"></i> Keluar Sistem</button>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col bg-gray-100">
+            <div id="header-top" class="bg-white p-4 shadow flex justify-between items-center no-print"><h1 id="header-title" class="text-xl font-bold text-gray-700 uppercase tracking-wide">Dashboard</h1></div>
+            <!-- WADAH UTAMA KONTEN -->
+            <div class="p-6 flex-1 overflow-y-auto" id="main-content"></div>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- KUMPULAN MODAL (POP-UP) DARI SEMUA MENU                    -->
+    <!-- ========================================================== -->
+
+    <!-- Modal Data Master -->
+    <div id="modal-master" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50 overflow-y-auto no-print">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl my-8">
+            <h3 id="modal-master-title" class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Form Data Master</h3>
+            <input type="hidden" id="m-rowIndex">
+            <div id="modal-master-body" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"></div>
+            <div class="flex justify-end gap-2 border-t pt-4">
+                <button onclick="closeModal('modal-master')" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded shadow">Batal</button>
+                <button onclick="saveMaster()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow">Simpan Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Form Project -->
+    <div id="modal-Project" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50 overflow-y-auto no-print">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl my-8">
+            <h3 id="modal-title-project" class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Form Project</h3>
+            <input type="hidden" id="p-rowIndex">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div><label class="block text-sm text-gray-600 mb-1">Project ID</label><input type="text" id="p-id" class="w-full border p-2 rounded focus:outline-blue-500"></div>
+                <div><label class="block text-sm text-gray-600 mb-1">Brand</label><input type="text" id="p-brand" class="w-full border p-2 rounded focus:outline-blue-500"></div>
+                <div><label class="block text-sm text-gray-600 mb-1">Nama PIC Klien</label><input type="text" id="p-pic" class="w-full border p-2 rounded focus:outline-blue-500"></div>
+                <div><label class="block text-sm text-gray-600 mb-1">Kontak Klien (WA)</label><input type="text" id="p-kontak" class="w-full border p-2 rounded focus:outline-blue-500"></div>
+            </div>
+            <div class="mb-4"><label class="block text-sm text-gray-600 mb-1">Nama Project</label><input type="text" id="p-nama" class="w-full border p-2 rounded focus:outline-blue-500"></div>
+            <div class="mb-4"><label class="block text-sm text-gray-600 mb-1">Alamat Project</label><textarea id="p-alamat" rows="2" class="w-full border p-2 rounded focus:outline-blue-500"></textarea></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div><label class="block text-sm text-gray-600 mb-1">Mulai</label><input type="date" id="p-mulai" class="w-full border p-2 rounded focus:outline-blue-500"></div>
+                <div><label class="block text-sm text-gray-600 mb-1">Selesai</label><input type="date" id="p-selesai" class="w-full border p-2 rounded focus:outline-blue-500"></div>
+                <div><label class="block text-sm text-gray-600 mb-1">Status</label><select id="p-status" class="w-full border p-2 rounded focus:outline-blue-500 bg-white"><option>Draft</option><option>Perencanaan</option><option>Sedang Berjalan</option><option>Selesai</option><option>Batal</option></select></div>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-4">
+                <button onclick="closeModal('modal-Project')" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded shadow">Batal</button>
+                <button onclick="saveProject()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow">Simpan Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Input Stok -->
+    <div id="modal-stok" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50 no-print">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Input Transaksi Stok</h3>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div><label class="block text-sm text-gray-600 mb-1">Tanggal</label><input type="date" id="s-tanggal" class="w-full border p-2 rounded focus:outline-indigo-500"></div>
+                <div><label class="block text-sm text-gray-600 mb-1">Arah Transaksi</label><select id="s-jenis" class="w-full border p-2 rounded bg-white focus:outline-indigo-500" onchange="onChangeJenisStok()"><option value="Masuk">Barang Masuk (In)</option><option value="Keluar">Barang Keluar (Out)</option></select></div>
+            </div>
+            <div class="mb-4"><label class="block text-sm text-gray-600 mb-1">Label Alokasi / Keterangan</label><select id="s-alokasi" class="w-full border p-2 rounded bg-white focus:outline-indigo-500" onchange="onChangeAlokasiStok()"></select></div>
+            <div class="mb-4 relative hidden" id="wrap-stok-project">
+                <label class="block text-sm mb-1 text-indigo-700 font-bold"><i class="fas fa-user-tag mr-1"></i> Cari Klien (Peruntukan)</label>
+                <input type="text" id="s-project-search" onkeyup="liveSearchProjectStok()" class="w-full border p-2 rounded border-indigo-300 bg-indigo-50 focus:outline-indigo-500" placeholder="Ketik Nama Klien..." autocomplete="off">
+                <input type="hidden" id="s-project-id">
+                <ul id="s-search-project" class="absolute z-50 w-full bg-white border border-gray-200 shadow-xl rounded max-h-40 overflow-y-auto hidden"></ul>
+            </div>
+            <div class="mb-4 relative">
+                <label class="block text-sm text-gray-600 mb-1">Cari Nama Material</label>
+                <input type="text" id="s-nama" onkeyup="liveSearchMaterialStok()" class="w-full border p-2 rounded focus:outline-indigo-500" placeholder="Ketik material..." autocomplete="off">
+                <ul id="s-search-material" class="absolute z-50 w-full bg-white border border-gray-200 shadow-xl rounded max-h-40 overflow-y-auto hidden"></ul>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="col-span-1"><label class="block text-sm text-gray-600 mb-1">Qty</label><input type="number" id="s-qty" class="w-full border p-2 rounded focus:outline-indigo-500" placeholder="0"></div>
+                <div class="col-span-1"><label class="block text-sm text-gray-600 mb-1">Satuan</label><input type="text" id="s-satuan" class="w-full border p-2 rounded bg-gray-100" readonly></div>
+                <div class="col-span-1"><label class="block text-sm text-gray-600 mb-1">Harga/Satuan</label><input type="number" id="s-harga" class="w-full border p-2 rounded focus:outline-indigo-500" placeholder="Rp 0"></div>
+            </div>
+            <div class="mb-6"><label class="block text-sm text-gray-600 mb-1">Referensi / Nota</label><input type="text" id="s-referensi" class="w-full border p-2 rounded focus:outline-indigo-500" placeholder="Contoh: Nota Pembelian / Nama Toko"></div>
+            <div class="flex justify-end gap-2 border-t pt-4">
+                <button onclick="closeModal('modal-stok')" class="bg-gray-400 text-white px-4 py-2 rounded shadow">Batal</button>
+                <button onclick="simpanTransaksiStok()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow font-bold">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal RAP Final (Jasa/Ops Manual) -->
+    <div id="modal-jasa-ops" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50 no-print">
+        <div class="bg-white p-6 rounded shadow w-96">
+            <h3 class="font-bold mb-4">Input Jasa/Ops Manual Aktual</h3>
+            <select id="jo-kategori" class="w-full border p-2 mb-2" onchange="document.getElementById('jo-nama').value=''; document.getElementById('jo-harga').value='';"><option value="Jasa">Jasa</option><option value="Operasional">Operasional</option></select>
+            <input type="text" id="jo-nama" class="w-full border p-2 mb-2" placeholder="Ketik nama... (Live Search)" onkeyup="liveSearchMaterialJO()" autocomplete="off">
+            <ul id="jo-search" class="bg-white border rounded shadow max-h-32 overflow-y-auto mb-2 hidden text-sm"></ul>
+            <div class="flex gap-2 mb-2"><input type="number" id="jo-qty" class="w-1/2 border p-2" placeholder="Qty"><input type="text" id="jo-satuan" class="w-1/2 border p-2 bg-gray-100" readonly></div>
+            <input type="number" id="jo-harga" class="w-full border p-2 mb-4" placeholder="Harga Aktual (Rp)">
+            <div class="flex justify-end gap-2"><button onclick="closeModal('modal-jasa-ops')" class="bg-gray-400 text-white px-3 py-1 rounded">Batal</button><button onclick="simpanJasaOps()" class="bg-blue-600 text-white px-3 py-1 rounded">Simpan</button></div>
+        </div>
+    </div>
+
+    <!-- 2. MEMANGGIL FILE JAVASCRIPT FINAL -->
+    <script src="script.js"></script>
+
+</body>
+</html>
