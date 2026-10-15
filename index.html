@@ -8,7 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- 1. MEMANGGIL FILE CSS EKSTERNAL (Pengganti include css) -->
+    <!-- MEMANGGIL FILE CSS EKSTERNAL -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-gray-100">
@@ -151,17 +151,23 @@
     <!-- Modal RAP Final (Jasa/Ops Manual) -->
     <div id="modal-jasa-ops" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50 no-print">
         <div class="bg-white p-6 rounded shadow w-96">
-            <h3 class="font-bold mb-4">Input Jasa/Ops Manual Aktual</h3>
+            <h3 class="font-bold mb-4" id="modal-title-jo">Input Jasa/Ops Manual Aktual</h3>
+            <!-- TAMBAHAN: Input tersembunyi untuk menyimpan ID Baris saat proses Edit -->
+            <input type="hidden" id="jo-rowIndex">
+            
             <select id="jo-kategori" class="w-full border p-2 mb-2" onchange="document.getElementById('jo-nama').value=''; document.getElementById('jo-harga').value='';"><option value="Jasa">Jasa</option><option value="Operasional">Operasional</option></select>
             <input type="text" id="jo-nama" class="w-full border p-2 mb-2" placeholder="Ketik nama... (Live Search)" onkeyup="liveSearchMaterialJO()" autocomplete="off">
             <ul id="jo-search" class="bg-white border rounded shadow max-h-32 overflow-y-auto mb-2 hidden text-sm"></ul>
             <div class="flex gap-2 mb-2"><input type="number" id="jo-qty" class="w-1/2 border p-2" placeholder="Qty"><input type="text" id="jo-satuan" class="w-1/2 border p-2 bg-gray-100" readonly></div>
             <input type="number" id="jo-harga" class="w-full border p-2 mb-4" placeholder="Harga Aktual (Rp)">
-            <div class="flex justify-end gap-2"><button onclick="closeModal('modal-jasa-ops')" class="bg-gray-400 text-white px-3 py-1 rounded">Batal</button><button onclick="simpanJasaOps()" class="bg-blue-600 text-white px-3 py-1 rounded">Simpan</button></div>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('modal-jasa-ops')" class="bg-gray-400 text-white px-3 py-1 rounded">Batal</button>
+                <button id="btn-simpan-jo" onclick="simpanJasaOps()" class="bg-blue-600 text-white px-3 py-1 rounded font-bold shadow">Simpan Data</button>
+            </div>
         </div>
     </div>
 
-    <!-- 2. MEMANGGIL FILE JAVASCRIPT FINAL -->
+    <!-- MEMANGGIL FILE JAVASCRIPT FINAL -->
     <script src="script.js"></script>
 
 </body>
