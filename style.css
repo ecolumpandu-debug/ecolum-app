@@ -1,15 +1,123 @@
-body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-#loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.9); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
-.spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-#app-section { display: none; }
-#login-section { display: flex; }
-.tab-active { border-bottom: 3px solid #4f46e5; color: #4f46e5; font-weight: bold; }
-.tab-inactive { color: #6b7280; border-bottom: 3px solid transparent; }
+body, html { 
+    margin: 0; 
+    padding: 0; 
+    height: 100%; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+}
+
+#loading-overlay { 
+    display: none; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(255, 255, 255, 0.9); 
+    z-index: 9999; 
+    justify-content: center; 
+    align-items: center; 
+    flex-direction: column; 
+}
+
+.spinner { 
+    border: 4px solid #f3f3f3; 
+    border-top: 4px solid #3b82f6; 
+    border-radius: 50%; 
+    width: 40px; 
+    height: 40px; 
+    animation: spin 1s linear infinite; 
+}
+
+@keyframes spin { 
+    0% { transform: rotate(0deg); } 
+    100% { transform: rotate(360deg); } 
+}
+
+#app-section { 
+    display: none; 
+}
+
+#login-section { 
+    display: flex; 
+}
+
+.tab-active { 
+    border-bottom: 3px solid #4f46e5; 
+    color: #4f46e5; 
+    font-weight: bold; 
+}
+
+.tab-inactive { 
+    color: #6b7280; 
+    border-bottom: 3px solid transparent; 
+}
+
+/* ========================================================
+   PENGATURAN KHUSUS PRINTER (MEMPERBAIKI HALAMAN TERPOTONG)
+   ======================================================== */
 @media print {
-    body { background: white; } #sidebar, #header-top, .no-print { display: none !important; }
-    #main-content { padding: 0 !important; width: 100%; } .print-area { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; }
-    table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #ccc !important; padding: 6px !important; font-size: 12px; }
-    .print-summary { break-inside: avoid; display: flex !important; justify-content: flex-end !important; width: 100% !important; margin-top: 20px !important; }
-    .print-summary-box { width: 50% !important; border: 1px solid #666 !important; padding: 15px !important; border-radius: 8px !important; }
+    /* 1. Bebaskan tinggi container agar data memanjang ke halaman berikutnya */
+    body, html, #app-section, #main-content, .flex-1 {
+        height: auto !important;
+        overflow: visible !important;
+        display: block !important;
+    }
+
+    /* 2. Sembunyikan elemen UI yang tidak perlu dicetak */
+    body { background: white; } 
+    #sidebar, #header-top, .no-print, #loading-overlay { 
+        display: none !important; 
+    }
+    
+    /* 3. Maksimalkan lebar area cetak tanpa batasan margin layar */
+    #main-content { 
+        padding: 0 !important; 
+        width: 100% !important; 
+        margin: 0 !important; 
+    } 
+    .print-area { 
+        width: 100% !important; 
+        margin: 0 !important; 
+        padding: 0 !important; 
+        box-shadow: none !important; 
+        border: none !important; 
+    }
+
+    /* 4. Optimasi tabel panjang di tengah batas kertas */
+    table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        page-break-inside: auto; 
+    }
+    tr { 
+        page-break-inside: avoid; 
+        page-break-after: auto; 
+    }
+    thead { 
+        display: table-header-group; /* Mengulang header tabel di setiap halaman baru */
+    } 
+    tfoot { 
+        display: table-footer-group; 
+    }
+
+    /* 5. Desain perbatasan tabel dan ringkasan */
+    th, td { 
+        border: 1px solid #ccc !important; 
+        padding: 6px !important; 
+        font-size: 12px; 
+    }
+    .print-summary { 
+        break-inside: avoid; 
+        display: flex !important; 
+        justify-content: flex-end !important; 
+        width: 100% !important; 
+        margin-top: 20px !important; 
+        page-break-before: auto; 
+    }
+    .print-summary-box { 
+        width: 50% !important; 
+        border: 1px solid #666 !important; 
+        padding: 15px !important; 
+        border-radius: 8px !important; 
+    }
 }
