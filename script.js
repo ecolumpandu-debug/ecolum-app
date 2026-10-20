@@ -97,7 +97,7 @@ function showMenu(menu) {
     else if(menu.startsWith('Master_')) renderMenuMaster(menu);
     else if(menu === 'Project') loadProjectData();
     else if(menu === 'Stok') renderMenuStok();
-    else if(menu === 'Timeline_Produksi') renderMenuTimeline();
+    else if(menu === 'Timeline') renderMenuTimeline();
     else if(menu === 'RAP_Awal' || menu === 'RAP_Belanja' || menu === 'RAP_Final') renderMenuRAP(menu);
 }
 
@@ -604,7 +604,7 @@ async function hapusJasaOps(rIdx) {
 }
 
 // =========================================================================
-// 11. MODUL TIMELINE PRODUKSI (DINAMIS & UPDATE WARNA)
+// 11. MODUL TIMELINE PRODUKSI (DINAMIS DENGAN FITUR STATUS HARI INI)
 // =========================================================================
 const legendDataTimeline = [
     { code: 1, label: 'Survey ulang', bgClass: 'bg-yellow-300', textClass: 'text-black' },
@@ -613,8 +613,8 @@ const legendDataTimeline = [
     { code: 4, label: 'Produksi', bgClass: 'bg-red-600', textClass: 'text-white' },
     { code: 5, label: 'Jadwal QC 1', bgClass: 'bg-teal-700', textClass: 'text-white' },
     { code: 6, label: 'Instalasi', bgClass: 'bg-green-600', textClass: 'text-white' },
-    { code: 7, label: 'Sipil', bgClass: 'bg-orange-500', textClass: 'text-white' }, // UPDATE WARNA
-    { code: 8, label: 'Selesai', bgClass: 'bg-lime-400', textClass: 'text-black' } // UPDATE WARNA
+    { code: 7, label: 'Sipil', bgClass: 'bg-orange-500', textClass: 'text-white' }, 
+    { code: 8, label: 'Selesai', bgClass: 'bg-lime-400', textClass: 'text-black' } 
 ];
 
 let rawTimelineData = [];
@@ -629,22 +629,25 @@ async function renderMenuTimeline() {
         currentProjectData = projRes.data;
         rawTimelineData = timeRes.data;
         
+        // Peningkatan UI: Menggunakan flex responsif untuk tampilan layar kecil/mobile
         let html = `
-        <div class="bg-white border-b shadow-sm p-4 flex justify-between items-center mb-4 rounded no-print">
-            <div class="w-1/2">
+        <div class="bg-white border-b shadow-sm p-4 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-4 rounded no-print">
+            <div class="w-full xl:w-1/2">
                 <h1 class="text-lg font-bold text-teal-700 mb-2 uppercase">A. Keterangan Kode Warna</h1>
-                <div class="grid grid-cols-4 gap-2" id="legend-container"></div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2" id="legend-container"></div>
             </div>
-            <div class="w-1/2 flex flex-col items-end gap-2">
-                <div class="flex gap-2 items-center bg-gray-50 p-2 rounded border">
-                    <span class="text-sm font-bold text-gray-600">Filter Rentang:</span>
-                    <input type="date" id="filter-start" class="border p-1.5 text-sm rounded focus:outline-teal-500">
-                    <span class="text-sm text-gray-500">s/d</span>
-                    <input type="date" id="filter-end" class="border p-1.5 text-sm rounded focus:outline-teal-500">
-                    <button onclick="terapkanFilterTimeline()" class="bg-teal-600 text-white px-3 py-1.5 rounded text-sm font-bold shadow hover:bg-teal-700"><i class="fas fa-search"></i> Tampilkan</button>
+            <div class="w-full xl:w-1/2 flex flex-col sm:flex-row justify-start xl:justify-end items-start sm:items-center gap-3">
+                <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center bg-gray-50 p-2 rounded border w-full sm:w-auto">
+                    <span class="text-sm font-bold text-gray-600">Filter:</span>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <input type="date" id="filter-start" class="border p-1.5 text-sm rounded focus:outline-teal-500 w-full sm:w-auto">
+                        <span class="text-sm text-gray-500 self-center">s/d</span>
+                        <input type="date" id="filter-end" class="border p-1.5 text-sm rounded focus:outline-teal-500 w-full sm:w-auto">
+                    </div>
+                    <button onclick="terapkanFilterTimeline()" class="bg-teal-600 text-white px-3 py-1.5 rounded text-sm font-bold shadow hover:bg-teal-700 w-full sm:w-auto"><i class="fas fa-search"></i></button>
                 </div>
-                <div class="inline-block bg-white border border-gray-300 rounded shadow-sm px-3 py-1 text-right">
-                    <span class="text-gray-400 font-bold uppercase text-[10px]">Tanggal Hari Ini</span>
+                <div class="inline-block bg-white border border-gray-300 rounded shadow-sm px-3 py-1 text-center w-full sm:w-auto">
+                    <span class="text-gray-400 font-bold uppercase text-[10px]">Hari Ini</span>
                     <div class="text-lg font-bold text-yellow-500" id="current-date-display"></div>
                 </div>
             </div>
@@ -739,6 +742,19 @@ function renderTableTimeline() {
                 while(dCurr <= dEnd) { daily[dCurr.toISOString().split('T')[0]] = { code: parseInt(event.Kode_Tahapan), showNumber: isFirst }; isFirst = false; dCurr.setDate(dCurr.getDate()+1); }
             });
 
+            // LOGIKA STATUS OTOMATIS: Berubah mengikuti kegiatan apa yang dijadwalkan pada hari ini
+            let currentStageLabel = (item.Status || "MENUNGGU").toUpperCase();
+            let currentStageColor = item.Status === "Sedang Berjalan" ? "bg-blue-50 text-blue-700" : (item.Status === "Selesai" ? "bg-green-50 text-green-700" : "bg-gray-50 text-gray-500");
+
+            if (item.Status === "Sedang Berjalan" && daily[targetDateStr]) {
+                const sc = daily[targetDateStr];
+                const leg = legendDataTimeline.find(x => x.code === sc.code);
+                if (leg) {
+                    currentStageLabel = leg.label.toUpperCase();
+                    currentStageColor = `${leg.bgClass} ${leg.textClass}`;
+                }
+            }
+
             let tCells = '';
             timelineDates.forEach(date => {
                 const dStr = date.toISOString().split('T')[0], sc = daily[dStr];
@@ -751,13 +767,11 @@ function renderTableTimeline() {
                 tCells += `<td class="${cClasses}">${content}</td>`;
             });
 
-            const scColor = item.Status === "Sedang Berjalan" ? "text-blue-600" : (item.Status === "Selesai" ? "text-green-600" : "text-gray-500");
-
             bodyHtml += `<tr class="hover:bg-blue-50 text-[11px] bg-white transition-colors">
                 <td class="px-2 py-1 text-center sticky-col-left bg-inherit"><button onclick="bukaModalTimeline('${item.Project_ID}')" class="bg-yellow-400 hover:bg-yellow-500 text-black px-2 py-1 rounded shadow text-[10px] font-bold"><i class="fas fa-edit"></i> Edit</button></td>
                 <td class="px-2 py-1 font-bold sticky-col-left bg-inherit text-indigo-800" style="left:50px; min-width:100px;">${item.Nama_PIC_Klien || '-'}</td>
                 <td class="px-2 py-1 sticky-col-left bg-inherit" style="left:150px; min-width:120px; white-space:normal; line-height:1.2;">${item.Nama_Project || '-'}</td>
-                <td class="px-2 py-1 text-center font-bold sticky-col-left z-10 shadow-right border-r-2 border-gray-400 ${scColor}" style="left:270px; width:80px;">${item.Status || '-'}</td>
+                <td class="px-1 py-1 text-center font-bold sticky-col-left z-10 shadow-right border-r-2 border-gray-400 ${currentStageColor} text-[9px] leading-tight" style="left:270px; width:80px; white-space:normal;">${currentStageLabel}</td>
                 ${tCells}
             </tr>`;
         });
