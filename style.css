@@ -53,71 +53,48 @@ body, html {
 }
 
 /* ========================================================
+   CSS KHUSUS TIMELINE PRODUKSI
+   ======================================================== */
+::-webkit-scrollbar { width: 8px; height: 10px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #555; }
+
+.sticky-col-left { position: sticky; left: 0; background-color: white; z-index: 10; }
+.sticky-header-top { position: sticky; top: 0; z-index: 20; }
+.sticky-corner { position: sticky; top: 0; left: 0; z-index: 30; }
+
+.shadow-right { box-shadow: 4px 0 6px -1px rgba(0, 0, 0, 0.1); }
+.shadow-bottom { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+
+.timeline-table { border-collapse: separate; border-spacing: 0; }
+.timeline-table th, .timeline-table td { border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
+.timeline-table th:last-child, .timeline-table td:last-child { border-right: none; }
+
+/* ========================================================
    PENGATURAN KHUSUS PRINTER (MEMPERBAIKI HALAMAN TERPOTONG)
    ======================================================== */
 @media print {
-    /* 1. Bebaskan tinggi container agar data memanjang ke halaman berikutnya */
+    /* Bebaskan tinggi container agar data memanjang ke halaman berikutnya */
     body, html, #app-section, #main-content, .flex-1 {
         height: auto !important;
         overflow: visible !important;
         display: block !important;
     }
 
-    /* 2. Sembunyikan elemen UI yang tidak perlu dicetak */
     body { background: white; } 
-    #sidebar, #header-top, .no-print, #loading-overlay { 
-        display: none !important; 
-    }
+    #sidebar, #header-top, .no-print, #loading-overlay { display: none !important; }
     
-    /* 3. Maksimalkan lebar area cetak tanpa batasan margin layar */
-    #main-content { 
-        padding: 0 !important; 
-        width: 100% !important; 
-        margin: 0 !important; 
-    } 
-    .print-area { 
-        width: 100% !important; 
-        margin: 0 !important; 
-        padding: 0 !important; 
-        box-shadow: none !important; 
-        border: none !important; 
-    }
+    #main-content { padding: 0 !important; width: 100% !important; margin: 0 !important; } 
+    .print-area { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important; }
 
-    /* 4. Optimasi tabel panjang di tengah batas kertas */
-    table { 
-        width: 100%; 
-        border-collapse: collapse; 
-        page-break-inside: auto; 
-    }
-    tr { 
-        page-break-inside: avoid; 
-        page-break-after: auto; 
-    }
-    thead { 
-        display: table-header-group; /* Mengulang header tabel di setiap halaman baru */
-    } 
-    tfoot { 
-        display: table-footer-group; 
-    }
+    /* Optimasi tabel panjang */
+    table { width: 100%; border-collapse: collapse; page-break-inside: auto; }
+    tr { page-break-inside: avoid; page-break-after: auto; }
+    thead { display: table-header-group; } 
+    tfoot { display: table-footer-group; }
 
-    /* 5. Desain perbatasan tabel dan ringkasan */
-    th, td { 
-        border: 1px solid #ccc !important; 
-        padding: 6px !important; 
-        font-size: 12px; 
-    }
-    .print-summary { 
-        break-inside: avoid; 
-        display: flex !important; 
-        justify-content: flex-end !important; 
-        width: 100% !important; 
-        margin-top: 20px !important; 
-        page-break-before: auto; 
-    }
-    .print-summary-box { 
-        width: 50% !important; 
-        border: 1px solid #666 !important; 
-        padding: 15px !important; 
-        border-radius: 8px !important; 
-    }
+    th, td { border: 1px solid #ccc !important; padding: 6px !important; font-size: 12px; }
+    .print-summary { break-inside: avoid; display: flex !important; justify-content: flex-end !important; width: 100% !important; margin-top: 20px !important; page-break-before: auto; }
+    .print-summary-box { width: 50% !important; border: 1px solid #666 !important; padding: 15px !important; border-radius: 8px !important; }
 }
