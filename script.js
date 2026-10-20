@@ -97,6 +97,7 @@ function showMenu(menu) {
     else if(menu.startsWith('Master_')) renderMenuMaster(menu);
     else if(menu === 'Project') loadProjectData();
     else if(menu === 'Stok') renderMenuStok();
+    else if(menu === 'Timeline_Produksi') renderMenuTimeline();
     else if(menu === 'RAP_Awal' || menu === 'RAP_Belanja' || menu === 'RAP_Final') renderMenuRAP(menu);
 }
 
@@ -520,7 +521,7 @@ function renderWSBelanja() {
     document.getElementById('main-content').innerHTML = html + `</tbody></table></div>`;
 }
 
-// RAP FINAL (TERBARU)
+// RAP FINAL (TERBARU DENGAN FITUR EDIT/HAPUS JASA OPS)
 function renderWSFinal() {
     let html = renderHeaderWS("RAP Final", "RAP_Final");
     html += `<h3 class="font-bold mb-2">1. MATERIAL FISIK (Ditarik Otomatis)</h3><table class="w-full text-sm border-collapse mb-6"><thead><tr class="bg-gray-100"><th class="p-2 border w-1/2">Nama Material</th><th class="p-2 border">Qty</th><th class="p-2 border">Harga Aktual</th><th class="p-2 border">Total Riil</th></tr></thead><tbody>`;
@@ -544,7 +545,6 @@ function renderWSFinal() {
     document.getElementById('main-content').innerHTML = html + `<tr><td colspan="3" class="p-2 border text-right font-bold bg-gray-50">Subtotal Jasa/Ops:</td><td class="p-2 border text-right font-bold text-orange-600 bg-gray-50">Rp ${subJasa.toLocaleString('id-ID')}</td><td class="p-2 border bg-gray-50 no-print"></td></tr></tbody></table><div class="flex justify-end print-summary"><div class="bg-white p-6 rounded border border-gray-400 shadow-md w-full md:w-1/2"><div class="flex justify-between text-gray-700"><span>TOTAL DASAR:</span> <span class="font-bold">Rp ${dsr.toLocaleString('id-ID')}</span></div><div class="flex justify-between text-indigo-600 mt-2 text-sm"><span>Premi 20%:</span> <span class="font-semibold">Rp ${prm.toLocaleString('id-ID')}</span></div><div class="flex justify-between font-bold text-xl text-indigo-900 border-t-2 border-indigo-900 pt-3 mt-3"><span>REALISASI FINAL:</span> <span>Rp ${(dsr+prm).toLocaleString('id-ID')}</span></div></div></div></div>`;
 }
 
-// LOGIKA MODAL JASA/OPS (TAMBAH DAN EDIT)
 function bukaModalJasaOps(isEdit, rIdx = null) { 
     if(isEdit) {
         const d = activeWorkspaceData.rapFinalManual.find(r => r.rowIndex == rIdx);
@@ -601,4 +601,141 @@ async function hapusJasaOps(rIdx) {
         const res = await apiDeleteMaster('Data_RAP_Final', rIdx);
         if(res.success) { bukaWorkspaceRAP('RAP_Final', activeWorkspaceData.projectInfo.Project_ID); } else { hideLoading(); alert(res.message); }
     }
+}
+
+// =========================================================================
+// 11. MODUL TIMELINE PRODUKSI
+// =========================================================================
+const legendDataTimeline = [
+    { code: 1, label: 'Survey ulang', bgClass: 'bg-yellow-300', textClass: 'text-black' },
+    { code: 2, label: 'Meeting', bgClass: 'bg-emerald-800', textClass: 'text-white' },
+    { code: 3, label: 'Belanja', bgClass: 'bg-slate-800', textClass: 'text-white' },
+    { code: 4, label: 'Produksi', bgClass: 'bg-red-600', textClass: 'text-white' },
+    { code: 5, label: 'Jadwal QC 1', bgClass: 'bg-teal-700', textClass: 'text-white' },
+    { code: 6, label: 'Instalasi', bgClass: 'bg-green-600', textClass: 'text-white' },
+    { code: 7, label: 'Selesai', bgClass: 'bg-lime-400', textClass: 'text-black' },
+    { code: 8, label: 'Sipil/ Quadra', bgClass: 'bg-orange-500', textClass: 'text-white' }
+];
+
+const mockProjectsTimeline = [
+    {
+        picGroup: "PIC APLEH",
+        items: [
+            { no: "1.", cust: "Ibu Euis", sales: "Arip", mulai: "24/09/26", selesai: "21/10/26", wkt: 27, status: "Produksi", statusCode: 4, timeline: [['2026-09-21', '2026-09-23', 1], ['2026-09-24', '2026-09-28', 6], ['2026-09-29', '2026-10-02', 3], ['2026-10-03', '2026-10-12', 4], ['2026-10-13', '2026-10-13', 5], ['2026-10-14', '2026-10-17', 4], ['2026-10-18', '2026-10-19', 6], ['2026-10-20', '2026-10-20', 5], ['2026-10-21', '2026-10-21', 6]] },
+            { no: "2.", cust: "Ibu Wina", sales: "Arip", mulai: "24/09/26", selesai: "26/10/26", wkt: 32, status: "Produksi", statusCode: 4, timeline: [['2026-09-21', '2026-09-23', 1], ['2026-09-24', '2026-09-28', 6], ['2026-09-29', '2026-10-02', 3], ['2026-10-03', '2026-10-09', 4], ['2026-10-10', '2026-10-10', 5], ['2026-10-11', '2026-10-23', 4], ['2026-10-24', '2026-10-26', 6]] },
+            { no: "3.", cust: "Ibu Eva", sales: "Arip", mulai: "09/10/26", selesai: "30/10/26", wkt: 21, status: "Belanja", statusCode: 3, timeline: [['2026-10-02', '2026-10-08', 1], ['2026-10-09', '2026-10-11', 6], ['2026-10-12', '2026-10-15', 3], ['2026-10-16', '2026-10-21', 4], ['2026-10-22', '2026-10-22', 5], ['2026-10-23', '2026-10-26', 4], ['2026-10-27', '2026-10-28', 6], ['2026-10-29', '2026-10-29', 5], ['2026-10-30', '2026-10-30', 6]] }
+        ]
+    }
+];
+
+function renderMenuTimeline() {
+    showLoading("Memuat Timeline...");
+    
+    let html = `
+    <div class="bg-white border-b shadow-sm p-4 flex justify-between items-start mb-4 rounded no-print">
+        <div class="w-2/3">
+            <h1 class="text-xl font-bold text-teal-700 mb-3 uppercase">A. Keterangan Kode Warna</h1>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2 max-w-2xl" id="legend-container"></div>
+        </div>
+        <div class="text-right">
+            <div class="inline-block bg-white border border-gray-300 rounded-md shadow-sm p-3">
+                <span class="text-gray-500 font-semibold uppercase tracking-wider text-xs">Hari Ini</span>
+                <div class="text-2xl font-bold text-yellow-500 mt-1" id="current-date-display"></div>
+            </div>
+        </div>
+    </div>
+    <div class="overflow-auto bg-white rounded-lg shadow border border-gray-200 relative print-area" id="table-container" style="max-height: 65vh;">
+        <table class="w-full text-left timeline-table bg-white">
+            <thead id="table-head"></thead>
+            <tbody id="table-body"></tbody>
+        </table>
+    </div>`;
+    
+    document.getElementById('main-content').innerHTML = html;
+
+    setTimeout(() => {
+        renderLegendTimeline();
+        renderTableTimeline();
+        hideLoading();
+    }, 100);
+}
+
+function renderLegendTimeline() {
+    const container = document.getElementById('legend-container');
+    let html = '';
+    legendDataTimeline.forEach(item => {
+        html += `<div class="flex items-center space-x-2 bg-gray-50 border p-1.5 rounded"><div class="w-6 h-6 flex items-center justify-center rounded font-bold text-xs ${item.bgClass} ${item.textClass}">${item.code}</div><span class="text-xs text-gray-700 font-medium">${item.label}</span></div>`;
+    });
+    container.innerHTML = html;
+}
+
+function renderTableTimeline() {
+    const targetDateStr = '2026-10-15';
+    const startDate = new Date('2026-09-15'), endDate = new Date('2026-10-31');
+    const timelineDates = [];
+    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    
+    let curr = new Date(startDate);
+    while (curr <= endDate) { timelineDates.push(new Date(curr)); curr.setDate(curr.getDate() + 1); }
+
+    const todayArr = targetDateStr.split('-');
+    document.getElementById('current-date-display').innerText = `${todayArr[2]}/${todayArr[1]}/${todayArr[0].substring(2)}`;
+
+    // THEAD
+    let monthHeadersHtml = '', currentMonth = -1, currentYear = -1, monthColspan = 0;
+    timelineDates.forEach((date, index) => {
+        const m = date.getMonth(), y = date.getFullYear();
+        if (m !== currentMonth) {
+            if (currentMonth !== -1) monthHeadersHtml += `<th colspan="${monthColspan}" class="px-2 py-1.5 text-center border-r border-b border-gray-400 font-bold bg-teal-600 text-white shadow-bottom sticky-header-top">${monthNames[currentMonth]} ${currentYear}</th>`;
+            currentMonth = m; currentYear = y; monthColspan = 1;
+        } else monthColspan++;
+        if (index === timelineDates.length - 1) monthHeadersHtml += `<th colspan="${monthColspan}" class="px-2 py-1.5 text-center border-r border-b border-gray-400 font-bold bg-teal-600 text-white shadow-bottom sticky-header-top">${monthNames[currentMonth]} ${currentYear}</th>`;
+    });
+
+    let headerRow1 = `<tr class="bg-teal-600 text-white text-xs uppercase tracking-wide"><th colspan="7" class="px-4 py-2 text-center border-r-2 border-b border-gray-400 sticky-corner bg-teal-700 z-40 shadow-right shadow-bottom">TIMELINE PROGRES</th>${monthHeadersHtml}</tr>`;
+    
+    let dateHeadersHtml = '';
+    timelineDates.forEach(date => {
+        const dStr = date.toISOString().split('T')[0], isToday = (dStr === targetDateStr);
+        let classes = `min-w-[28px] w-[28px] max-w-[28px] py-1 text-center font-semibold text-xs border-r border-b border-gray-300 sticky-header-top z-20 shadow-bottom ${isToday ? 'bg-yellow-400 text-black today-highlight-header' : 'bg-gray-200 text-gray-700'}`;
+        dateHeadersHtml += `<th class="${classes}">${date.getDate()}</th>`;
+    });
+
+    let headerRow2 = `<tr class="bg-gray-200 text-gray-600 text-[11px] uppercase font-bold sticky-header-top shadow-bottom z-30"><th class="px-3 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200">NO.</th><th class="px-3 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200" style="left:40px;">CUST</th><th class="px-3 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200" style="left:120px;">SALES</th><th class="px-3 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200" style="left:180px;">MULAI</th><th class="px-3 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200" style="left:250px;">SELESAI</th><th class="px-2 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200 text-center" style="left:320px;">WKT</th><th class="px-3 py-1.5 sticky-col-left z-30 shadow-bottom shadow-right bg-gray-200 border-r-2 border-gray-400" style="left:365px;">STATUS</th>${dateHeadersHtml}</tr>`;
+    document.getElementById('table-head').innerHTML = headerRow1 + headerRow2;
+
+    // TBODY
+    let bodyHtml = '';
+    mockProjectsTimeline.forEach(group => {
+        bodyHtml += `<tr class="bg-gray-100 font-bold text-gray-800"><td colspan="7" class="px-3 py-1.5 sticky-col-left shadow-right z-10 bg-gray-100 border-r-2 border-gray-400 text-[13px] uppercase">- ${group.picGroup}</td><td colspan="${timelineDates.length}" class="bg-gray-50 border-b border-gray-200"></td></tr>`;
+        group.items.forEach(item => {
+            const daily = {};
+            if(item.timeline) {
+                item.timeline.forEach(event => {
+                    let dCurr = new Date(event[0]), dEnd = new Date(event[1]), isFirst = true;
+                    while(dCurr <= dEnd) { daily[dCurr.toISOString().split('T')[0]] = { code: event[2], showNumber: isFirst }; isFirst = false; dCurr.setDate(dCurr.getDate()+1); }
+                });
+            }
+
+            let tCells = '';
+            timelineDates.forEach(date => {
+                const dStr = date.toISOString().split('T')[0], sc = daily[dStr];
+                let content = '', cClasses = `text-center text-xs font-bold border-r border-gray-200 p-0 m-0 w-[28px] max-w-[28px] ${(dStr===targetDateStr && !sc) ? 'bg-yellow-50' : ''}`;
+                if(sc) {
+                    const l = legendDataTimeline.find(x => x.code === sc.code);
+                    cClasses += l ? ` ${l.bgClass} ${l.textClass}` : '';
+                    content = sc.showNumber ? date.getDate() : (sc.code===1 ? '<span class="text-yellow-600">-</span>' : (sc.code===6 ? '<span class="text-green-800/50">-</span>' : ''));
+                }
+                tCells += `<td class="${cClasses}">${content}</td>`;
+            });
+
+            const statColor = item.statusCode ? (() => { const l = legendDataTimeline.find(x => x.code === item.statusCode); return l ? `${l.bgClass} ${l.textClass}` : 'bg-white text-gray-700'; })() : 'bg-white text-gray-700';
+            
+            bodyHtml += `<tr class="hover:bg-blue-50 text-[12px] bg-white transition-colors"><td class="px-2 py-1.5 text-center sticky-col-left bg-inherit text-gray-500">${item.no}</td><td class="px-3 py-1.5 font-bold sticky-col-left bg-inherit" style="left:40px; min-width:80px;">${item.cust}</td><td class="px-3 py-1.5 sticky-col-left bg-inherit" style="left:120px; min-width:60px;">${item.sales}</td><td class="px-3 py-1.5 italic text-teal-700 sticky-col-left bg-inherit" style="left:180px;">${item.mulai}</td><td class="px-3 py-1.5 italic text-teal-700 sticky-col-left bg-inherit" style="left:250px;">${item.selesai}</td><td class="px-2 py-1.5 text-center font-semibold text-gray-600 sticky-col-left bg-inherit" style="left:320px;">${item.wkt}</td><td class="px-3 py-1.5 text-center font-bold sticky-col-left z-10 shadow-right border-r-2 border-gray-400 ${statColor}" style="left:365px; width:100px;">${item.status}</td>${tCells}</tr>`;
+        });
+    });
+    document.getElementById('table-body').innerHTML = bodyHtml;
+
+    // Auto-scroll ke Hari Ini
+    setTimeout(() => { const tCell = document.querySelector('.today-highlight-header'); if(tCell) document.getElementById('table-container').scrollLeft = tCell.offsetLeft - 400; }, 100);
 }
