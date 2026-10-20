@@ -1,7 +1,7 @@
 // =========================================================================
 // 1. KONFIGURASI API UTAMA (VERCEL TO GOOGLE SHEETS)
 // =========================================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbzjPrVU2CFkqzpWZaCUBCr-fHuBmK-FIKARhmwfy-7K3lzEZD2jnu1cDTEVVTwJDZs7/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbyW_q1ubEafN_6qDkAYvTThSTNUV8JQMiBwqmrznU2znUeuVkTKDgEaNuqULBEFwTCH/exec"; 
 
 // =========================================================================
 // 2. VARIABEL GLOBAL (STATE APLIKASI)
