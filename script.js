@@ -1,7 +1,7 @@
 // =========================================================================
 // 1. KONFIGURASI API UTAMA (VERCEL TO GOOGLE SHEETS)
 // =========================================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbz5yF5GusdRP2GFqCSVmwxETYGhiUCSOjxC70jtAYoGzuIHR6C1KBqJ9LXXE-wM-YLd/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbxiCsSnFvUgmk8B_hjPK6xvcXtaSyI1eohqlC0YOh_ioGIXJjB8SHd_BfNUmaGYlS7k/exec"; 
 
 // =========================================================================
 // 2. VARIABEL GLOBAL (STATE APLIKASI)
@@ -67,9 +67,9 @@ async function doLogin() {
 
     const res = await apiPost({ action: 'login', username: uname, password: pass });
     if (res && res.success) {
-        document.getElementById('user-name').innerText = res.nama || uname;
-        document.getElementById('user-role').innerText = res.jabatan || "Administrator";
-        document.getElementById('user-initial').innerText = (res.nama || uname).charAt(0).toUpperCase();
+        document.getElementById('user-name').innerText = res.data.nama || uname;
+        document.getElementById('user-role').innerText = res.data.jabatan || "Administrator";
+        document.getElementById('user-initial').innerText = (res.data.nama || uname).charAt(0).toUpperCase();
 
         document.getElementById('login-section').style.display = 'none';
         let appSec = document.getElementById('app-section');
@@ -118,7 +118,7 @@ function membangunUI_Dashboard(dashData, gudangData) {
 
     dashData.forEach(p => {
         if(p.Status === "Sedang Berjalan") activeProj++;
-        if(p.Status === "Selesai") totalRev += parseFloat(p.Total_Final) || 0;
+        if(p.Status === "Selesai") totalRev += parseFloat(p.Total_Final || 0);
         if(statusCount[p.Status] !== undefined) statusCount[p.Status]++;
         if(chartLabels.length < 5 && (p.Status === 'Sedang Berjalan' || p.Status === 'Selesai')) {
             let nameLable = p.Nama_Project ? p.Nama_Project.substring(0, 15) : p.Project_ID;
@@ -283,7 +283,7 @@ function renderTbodyProject() {
     else {
         slice.forEach(r => {
             let sc = r.Status === "Sedang Berjalan" ? "bg-blue-100 text-blue-700" : (r.Status === "Selesai" ? "bg-green-100 text-green-700" : (r.Status === "Batal" ? "bg-red-100 text-red-700" : "bg-gray-200 text-gray-700"));
-            html += `<tr class="border-b hover:bg-indigo-50 text-sm"><td class="p-3 font-semibold text-gray-600">${r.Project_ID}</td><td class="p-3"><div class="font-bold text-indigo-700 text-base mb-0.5"><i class="fas fa-user-tag text-gray-400 mr-1 text-xs"></i> ${r.Nama_PIC_Klien || '-'}</div><div class="text-xs text-gray-500">Proyek: ${r.Nama_Project} | Brand: ${r.Brand || '-'}</div></td><td class="p-3 text-right font-medium text-gray-700">Rp ${Number(r.Total_Awal).toLocaleString('id-ID')}</td><td class="p-3 text-right font-bold text-indigo-700 border-l border-gray-200 bg-indigo-50/30">Rp ${Number(r.Total_Final).toLocaleString('id-ID')}</td><td class="p-3 text-center"><span class="${sc} px-2 py-1 rounded text-xs font-bold shadow-sm">${r.Status}</span></td><td class="p-3 text-center"><button onclick="openModalProject(true, '${r.Project_ID}')" class="bg-yellow-500 text-white px-2 py-1.5 rounded text-xs mx-0.5"><i class="fas fa-edit"></i></button><button onclick="hapusProject(${r.rowIndex})" class="bg-red-500 text-white px-2 py-1.5 rounded text-xs mx-0.5"><i class="fas fa-trash"></i></button></td></tr>`;
+            html += `<tr class="border-b hover:bg-indigo-50 text-sm"><td class="p-3 font-semibold text-gray-600">${r.Project_ID}</td><td class="p-3"><div class="font-bold text-indigo-700 text-base mb-0.5"><i class="fas fa-user-tag text-gray-400 mr-1 text-xs"></i> ${r.Nama_PIC_Klien || '-'}</div><div class="text-xs text-gray-500">Proyek: ${r.Nama_Project} | Brand: ${r.Brand || '-'}</div></td><td class="p-3 text-right font-medium text-gray-700">Rp ${Number(r.Total_Awal || 0).toLocaleString('id-ID')}</td><td class="p-3 text-right font-bold text-indigo-700 border-l border-gray-200 bg-indigo-50/30">Rp ${Number(r.Total_Final || 0).toLocaleString('id-ID')}</td><td class="p-3 text-center"><span class="${sc} px-2 py-1 rounded text-xs font-bold shadow-sm">${r.Status}</span></td><td class="p-3 text-center"><button onclick="openModalProject(true, '${r.Project_ID}')" class="bg-yellow-500 text-white px-2 py-1.5 rounded text-xs mx-0.5"><i class="fas fa-edit"></i></button><button onclick="hapusProject(${r.rowIndex})" class="bg-red-500 text-white px-2 py-1.5 rounded text-xs mx-0.5"><i class="fas fa-trash"></i></button></td></tr>`;
         });
     }
     tbody.innerHTML = html;
@@ -348,7 +348,7 @@ function renderTabelStokAktual() {
     const tot = Math.ceil(gudangStock.length / 10) || 1; const slice = gudangStock.slice((currentPageStok - 1) * 10, currentPageStok * 10);
     let h = `<div class="overflow-x-auto"><table class="min-w-full text-left text-sm mb-4"><thead><tr class="bg-gray-800 text-white"><th class="p-3">Nama Material</th><th class="p-3 text-center">Total Stok Fisik</th></tr></thead><tbody>`;
     if (slice.length === 0) h += `<tr><td colspan="2" class="p-4 text-center italic text-gray-500">Gudang kosong.</td></tr>`;
-    slice.forEach(s => { h += `<tr class="border-b hover:bg-gray-50"><td class="p-3 font-semibold text-gray-700">${s.Nama_Item} <span class="text-xs text-gray-400">(${s.Satuan})</span></td><td class="p-3 text-center text-lg font-bold ${s.Total_Stok<=0?'text-red-500 bg-red-50':'text-green-600 bg-green-50'}">${s.Total_Stok}</td></tr>`; });
+    slice.forEach(s => { h += `<tr class="border-b hover:bg-gray-50"><td class="p-3 font-semibold text-gray-700">${s.Nama_Item} <span class="text-xs text-gray-400">(${s.Satuan || '-'})</span></td><td class="p-3 text-center text-lg font-bold ${s.Total_Stok<=0?'text-red-500 bg-red-50':'text-green-600 bg-green-50'}">${s.Total_Stok}</td></tr>`; });
     document.getElementById('area-stok').innerHTML = h + `</tbody></table></div><div class="flex justify-between items-center text-sm text-gray-600 mt-2"><span>Hal ${currentPageStok} dari ${tot}</span><div class="flex gap-2"><button onclick="if(currentPageStok>1){currentPageStok--;renderTabelStokAktual();}" class="px-3 py-1 border rounded bg-white hover:bg-gray-100">Prev</button><button onclick="if(currentPageStok<${tot}){currentPageStok++;renderTabelStokAktual();}" class="px-3 py-1 border rounded bg-white hover:bg-gray-100">Next</button></div></div>`;
 }
 
@@ -356,7 +356,7 @@ function renderTabelStokLog() {
     let h = `<div class="max-h-96 overflow-y-auto"><table class="min-w-full text-left text-sm"><thead><tr class="bg-gray-800 text-white"><th class="p-2">Tgl</th><th class="p-2">Keterangan</th><th class="p-2">Material</th><th class="p-2 text-right">Harga</th><th class="p-2 text-center">In</th><th class="p-2 text-center">Out</th></tr></thead><tbody>`;
     gudangLogs.forEach(l => {
         let col = parseFloat(l.Qty_Masuk) > 0 ? "text-green-600" : "text-red-600";
-        h += `<tr class="border-b hover:bg-gray-50"><td class="p-2 text-gray-500">${(l.Tanggal||'').split('T')[0]}</td><td class="p-2 font-semibold ${col} text-xs uppercase">${l.Kategori_Alokasi} <div class="text-gray-500 font-normal">Ref: ${l.Project_ID !== "" ? l.Project_ID : (l.Referensi||'-')}</div></td><td class="p-2 font-medium">${l.Nama_Material}</td><td class="p-2 text-right text-gray-600">Rp ${(parseFloat(l.Harga_Satuan)||0).toLocaleString('id-ID')}</td><td class="p-2 text-center text-green-600 font-bold bg-green-50">${parseFloat(l.Qty_Masuk)>0?l.Qty_Masuk:'-'}</td><td class="p-2 text-center text-red-600 font-bold bg-red-50">${parseFloat(l.Qty_Keluar)>0?l.Qty_Keluar:'-'}</td></tr>`;
+        h += `<tr class="border-b hover:bg-gray-50"><td class="p-2 text-gray-500">${(l.Tanggal||'').split('T')[0]}</td><td class="p-2 font-semibold ${col} text-xs uppercase">${l.Kategori_Alokasi} <div class="text-gray-500 font-normal">Ref: ${l.Project_ID !== "" ? l.Project_ID : (l.Referensi||'-')}</div></td><td class="p-2 font-medium">${l.Nama_Material || l.Nama_Item}</td><td class="p-2 text-right text-gray-600">Rp ${(parseFloat(l.Harga_Satuan)||0).toLocaleString('id-ID')}</td><td class="p-2 text-center text-green-600 font-bold bg-green-50">${parseFloat(l.Qty_Masuk)>0?l.Qty_Masuk:'-'}</td><td class="p-2 text-center text-red-600 font-bold bg-red-50">${parseFloat(l.Qty_Keluar)>0?l.Qty_Keluar:'-'}</td></tr>`;
     });
     document.getElementById('area-log').innerHTML = h + `</tbody></table></div>`;
 }
@@ -393,7 +393,7 @@ function liveSearchMaterialStok() {
                 document.getElementById('s-nama').value = i.Nama_Item; document.getElementById('s-satuan').value = sat; 
                 if(document.getElementById('s-jenis').value === 'Masuk') { document.getElementById('s-harga').value = ""; document.getElementById('s-harga').focus(); } 
                 else {
-                    let lastP = 0; let lLog = gudangLogs.find(l => l.Nama_Material === i.Nama_Item && parseFloat(l.Qty_Masuk) > 0);
+                    let lastP = 0; let lLog = gudangLogs.find(l => (l.Nama_Material||l.Nama_Item) === i.Nama_Item && parseFloat(l.Qty_Masuk) > 0);
                     if(lLog && lLog.Harga_Satuan) lastP = parseInt(lLog.Harga_Satuan.toString().replace(/[^0-9-]/g, "")) || 0;
                     else lastP = parseInt((i.Harga_Estimasi||0).toString().replace(/[^0-9-]/g, "")) || 0;
                     document.getElementById('s-harga').value = lastP; document.getElementById('s-qty').focus();
@@ -515,18 +515,18 @@ function renderWSBelanja() {
     let html = renderHeaderWS("RAP Belanja (Kebutuhan vs Stok)", "RAP_Belanja");
     html += `<table class="w-full text-sm border-collapse mb-6"><thead><tr class="bg-gray-100 text-left"><th class="p-2 border">Nama Material</th><th class="p-2 border text-center">Kebutuhan</th><th class="p-2 border text-center">Stok Gudang</th><th class="p-2 border text-center bg-red-600 text-white font-bold">Harus Beli</th></tr></thead><tbody>`;
     activeWorkspaceData.rapAwal.filter(r => r.Kategori === 'Material').forEach(r => {
-        let dS = activeWorkspaceData.gudangStock.find(s => s.Nama_Item === r.Nama_Item); let sG = dS ? dS.Total_Stok : 0; let beli = Math.max(0, (parseFloat(r.Qty)||0) - sG);
+        let dS = activeWorkspaceData.gudangStock.find(s => s.Nama_Item === r.Nama_Item); let sG = dS ? parseFloat(dS.Total_Stok) : 0; let beli = Math.max(0, (parseFloat(r.Qty)||0) - sG);
         html += `<tr class="border-b"><td class="p-2 border">${r.Nama_Item}</td><td class="p-2 border text-center">${r.Qty} ${r.Satuan}</td><td class="p-2 border text-center bg-blue-50">${sG} ${r.Satuan}</td><td class="p-2 border text-center font-bold text-red-700 ${beli>0?'bg-red-50':''}">${beli} ${r.Satuan}</td></tr>`;
     });
     document.getElementById('main-content').innerHTML = html + `</tbody></table></div>`;
 }
 
-// RAP FINAL (TERBARU DENGAN FITUR EDIT/HAPUS JASA OPS)
+// RAP FINAL 
 function renderWSFinal() {
     let html = renderHeaderWS("RAP Final", "RAP_Final");
     html += `<h3 class="font-bold mb-2">1. MATERIAL FISIK (Ditarik Otomatis)</h3><table class="w-full text-sm border-collapse mb-6"><thead><tr class="bg-gray-100"><th class="p-2 border w-1/2">Nama Material</th><th class="p-2 border">Qty</th><th class="p-2 border">Harga Aktual</th><th class="p-2 border">Total Riil</th></tr></thead><tbody>`;
     let subMat = 0;
-    activeWorkspaceData.stokMaterialFinal.forEach(m => { let h=parseFloat(m.Harga_Satuan)||0, t=parseFloat(m.Total_Nilai)||0; subMat+=t; html += `<tr class="border-b"><td class="p-2 border">${m.Nama_Material} <span class="text-xs text-gray-400">Tgl: ${(m.Tanggal||'').split('T')[0]}</span></td><td class="p-2 border text-center">${m.Qty_Keluar} ${m.Satuan}</td><td class="p-2 border text-right">Rp ${h.toLocaleString('id-ID')}</td><td class="p-2 border text-right font-bold">Rp ${t.toLocaleString('id-ID')}</td></tr>`; });
+    activeWorkspaceData.stokMaterialFinal.forEach(m => { let h=parseFloat(m.Harga_Satuan)||0, t=parseFloat(m.Total_Nilai)||0; subMat+=t; html += `<tr class="border-b"><td class="p-2 border">${m.Nama_Material||m.Nama_Item} <span class="text-xs text-gray-400">Tgl: ${(m.Tanggal||'').split('T')[0]}</span></td><td class="p-2 border text-center">${m.Qty_Keluar} ${m.Satuan}</td><td class="p-2 border text-right">Rp ${h.toLocaleString('id-ID')}</td><td class="p-2 border text-right font-bold">Rp ${t.toLocaleString('id-ID')}</td></tr>`; });
     html += `<tr><td colspan="3" class="p-2 border text-right font-bold bg-gray-50">Subtotal Material:</td><td class="p-2 border text-right font-bold bg-gray-50">Rp ${subMat.toLocaleString('id-ID')}</td></tr></tbody></table>`;
 
     html += `<h3 class="font-bold mb-2 flex justify-between"><span>2. JASA & OPERASIONAL AKTUAL</span> <button onclick="bukaModalJasaOps(false)" class="text-xs bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded shadow no-print"><i class="fas fa-plus"></i> Tambah Data</button></h3><table class="w-full text-sm border-collapse mb-6"><thead><tr class="bg-gray-100"><th class="p-2 border w-1/2">Nama Item</th><th class="p-2 border text-center">Qty</th><th class="p-2 border text-right">Harga</th><th class="p-2 border text-right">Total Riil</th><th class="p-2 border text-center no-print">Aksi</th></tr></thead><tbody>`;
@@ -604,7 +604,7 @@ async function hapusJasaOps(rIdx) {
 }
 
 // =========================================================================
-// 11. MODUL TIMELINE PRODUKSI
+// 11. MODUL TIMELINE PRODUKSI (DINAMIS & UPDATE WARNA)
 // =========================================================================
 const legendDataTimeline = [
     { code: 1, label: 'Survey ulang', bgClass: 'bg-yellow-300', textClass: 'text-black' },
@@ -613,67 +613,82 @@ const legendDataTimeline = [
     { code: 4, label: 'Produksi', bgClass: 'bg-red-600', textClass: 'text-white' },
     { code: 5, label: 'Jadwal QC 1', bgClass: 'bg-teal-700', textClass: 'text-white' },
     { code: 6, label: 'Instalasi', bgClass: 'bg-green-600', textClass: 'text-white' },
-    { code: 7, label: 'Selesai', bgClass: 'bg-lime-400', textClass: 'text-black' },
-    { code: 8, label: 'Sipil/ Quadra', bgClass: 'bg-orange-500', textClass: 'text-white' }
+    { code: 7, label: 'Sipil', bgClass: 'bg-orange-500', textClass: 'text-white' }, // UPDATE WARNA
+    { code: 8, label: 'Selesai', bgClass: 'bg-lime-400', textClass: 'text-black' } // UPDATE WARNA
 ];
 
-const mockProjectsTimeline = [
-    {
-        picGroup: "PIC APLEH",
-        items: [
-            { no: "1.", cust: "Ibu Euis", sales: "Arip", mulai: "24/09/26", selesai: "21/10/26", wkt: 27, status: "Produksi", statusCode: 4, timeline: [['2026-09-21', '2026-09-23', 1], ['2026-09-24', '2026-09-28', 6], ['2026-09-29', '2026-10-02', 3], ['2026-10-03', '2026-10-12', 4], ['2026-10-13', '2026-10-13', 5], ['2026-10-14', '2026-10-17', 4], ['2026-10-18', '2026-10-19', 6], ['2026-10-20', '2026-10-20', 5], ['2026-10-21', '2026-10-21', 6]] },
-            { no: "2.", cust: "Ibu Wina", sales: "Arip", mulai: "24/09/26", selesai: "26/10/26", wkt: 32, status: "Produksi", statusCode: 4, timeline: [['2026-09-21', '2026-09-23', 1], ['2026-09-24', '2026-09-28', 6], ['2026-09-29', '2026-10-02', 3], ['2026-10-03', '2026-10-09', 4], ['2026-10-10', '2026-10-10', 5], ['2026-10-11', '2026-10-23', 4], ['2026-10-24', '2026-10-26', 6]] },
-            { no: "3.", cust: "Ibu Eva", sales: "Arip", mulai: "09/10/26", selesai: "30/10/26", wkt: 21, status: "Belanja", statusCode: 3, timeline: [['2026-10-02', '2026-10-08', 1], ['2026-10-09', '2026-10-11', 6], ['2026-10-12', '2026-10-15', 3], ['2026-10-16', '2026-10-21', 4], ['2026-10-22', '2026-10-22', 5], ['2026-10-23', '2026-10-26', 4], ['2026-10-27', '2026-10-28', 6], ['2026-10-29', '2026-10-29', 5], ['2026-10-30', '2026-10-30', 6]] }
-        ]
-    }
-];
+let rawTimelineData = [];
 
-function renderMenuTimeline() {
-    showLoading("Memuat Timeline...");
+async function renderMenuTimeline() {
+    showLoading("Memuat Data Database Timeline...");
     
-    let html = `
-    <div class="bg-white border-b shadow-sm p-4 flex justify-between items-start mb-4 rounded no-print">
-        <div class="w-2/3">
-            <h1 class="text-xl font-bold text-teal-700 mb-3 uppercase">A. Keterangan Kode Warna</h1>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2 max-w-2xl" id="legend-container"></div>
-        </div>
-        <div class="text-right">
-            <div class="inline-block bg-white border border-gray-300 rounded-md shadow-sm p-3">
-                <span class="text-gray-500 font-semibold uppercase tracking-wider text-xs">Hari Ini</span>
-                <div class="text-2xl font-bold text-yellow-500 mt-1" id="current-date-display"></div>
+    const [projRes, timeRes] = await Promise.all([ apiGet('getSheetData', '&sheetName=Data_Project'), apiGet('getSheetData', '&sheetName=Data_Timeline') ]);
+    hideLoading();
+
+    if(projRes.success && timeRes.success) {
+        currentProjectData = projRes.data;
+        rawTimelineData = timeRes.data;
+        
+        let html = `
+        <div class="bg-white border-b shadow-sm p-4 flex justify-between items-center mb-4 rounded no-print">
+            <div class="w-1/2">
+                <h1 class="text-lg font-bold text-teal-700 mb-2 uppercase">A. Keterangan Kode Warna</h1>
+                <div class="grid grid-cols-4 gap-2" id="legend-container"></div>
+            </div>
+            <div class="w-1/2 flex flex-col items-end gap-2">
+                <div class="flex gap-2 items-center bg-gray-50 p-2 rounded border">
+                    <span class="text-sm font-bold text-gray-600">Filter Rentang:</span>
+                    <input type="date" id="filter-start" class="border p-1.5 text-sm rounded focus:outline-teal-500">
+                    <span class="text-sm text-gray-500">s/d</span>
+                    <input type="date" id="filter-end" class="border p-1.5 text-sm rounded focus:outline-teal-500">
+                    <button onclick="terapkanFilterTimeline()" class="bg-teal-600 text-white px-3 py-1.5 rounded text-sm font-bold shadow hover:bg-teal-700"><i class="fas fa-search"></i> Tampilkan</button>
+                </div>
+                <div class="inline-block bg-white border border-gray-300 rounded shadow-sm px-3 py-1 text-right">
+                    <span class="text-gray-400 font-bold uppercase text-[10px]">Tanggal Hari Ini</span>
+                    <div class="text-lg font-bold text-yellow-500" id="current-date-display"></div>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="overflow-auto bg-white rounded-lg shadow border border-gray-200 relative print-area" id="table-container" style="max-height: 65vh;">
-        <table class="w-full text-left timeline-table bg-white">
-            <thead id="table-head"></thead>
-            <tbody id="table-body"></tbody>
-        </table>
-    </div>`;
-    
-    document.getElementById('main-content').innerHTML = html;
-
-    setTimeout(() => {
+        <div class="overflow-auto bg-white rounded-lg shadow border border-gray-200 relative print-area" id="table-container" style="max-height: 65vh;">
+            <table class="w-full text-left timeline-table bg-white">
+                <thead id="table-head"></thead>
+                <tbody id="table-body"></tbody>
+            </table>
+        </div>`;
+        
+        document.getElementById('main-content').innerHTML = html;
+        injectModalTimeline(); 
         renderLegendTimeline();
+
+        const today = new Date();
+        const start = new Date(today); start.setDate(today.getDate() - 7);
+        const end = new Date(today); end.setDate(today.getDate() + 30);
+        document.getElementById('filter-start').value = start.toISOString().split('T')[0];
+        document.getElementById('filter-end').value = end.toISOString().split('T')[0];
+
         renderTableTimeline();
-        hideLoading();
-    }, 100);
+    } else {
+        alert("Gagal memuat data. Pastikan Sheet 'Data_Timeline' sudah dibuat di Google Sheets Anda.");
+    }
 }
+
+function terapkanFilterTimeline() { renderTableTimeline(); }
 
 function renderLegendTimeline() {
     const container = document.getElementById('legend-container');
     let html = '';
     legendDataTimeline.forEach(item => {
-        html += `<div class="flex items-center space-x-2 bg-gray-50 border p-1.5 rounded"><div class="w-6 h-6 flex items-center justify-center rounded font-bold text-xs ${item.bgClass} ${item.textClass}">${item.code}</div><span class="text-xs text-gray-700 font-medium">${item.label}</span></div>`;
+        html += `<div class="flex items-center space-x-1.5 bg-gray-50 border p-1 rounded"><div class="w-5 h-5 flex items-center justify-center rounded font-bold text-[10px] ${item.bgClass} ${item.textClass}">${item.code}</div><span class="text-[11px] text-gray-700 font-medium">${item.label}</span></div>`;
     });
     container.innerHTML = html;
 }
 
 function renderTableTimeline() {
-    const targetDateStr = '2026-10-15';
-    const startDate = new Date('2026-09-15'), endDate = new Date('2026-10-31');
-    const timelineDates = [];
-    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    const tglMulaiStr = document.getElementById('filter-start').value, tglSelesaiStr = document.getElementById('filter-end').value;
+    if(!tglMulaiStr || !tglSelesaiStr) return alert("Pilih rentang tanggal terlebih dahulu!");
+
+    const startDate = new Date(tglMulaiStr), endDate = new Date(tglSelesaiStr), targetDateStr = new Date().toISOString().split('T')[0];
+    const timelineDates = [], monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
     
     let curr = new Date(startDate);
     while (curr <= endDate) { timelineDates.push(new Date(curr)); curr.setDate(curr.getDate() + 1); }
@@ -681,7 +696,6 @@ function renderTableTimeline() {
     const todayArr = targetDateStr.split('-');
     document.getElementById('current-date-display').innerText = `${todayArr[2]}/${todayArr[1]}/${todayArr[0].substring(2)}`;
 
-    // THEAD
     let monthHeadersHtml = '', currentMonth = -1, currentYear = -1, monthColspan = 0;
     timelineDates.forEach((date, index) => {
         const m = date.getMonth(), y = date.getFullYear();
@@ -692,7 +706,7 @@ function renderTableTimeline() {
         if (index === timelineDates.length - 1) monthHeadersHtml += `<th colspan="${monthColspan}" class="px-2 py-1.5 text-center border-r border-b border-gray-400 font-bold bg-teal-600 text-white shadow-bottom sticky-header-top">${monthNames[currentMonth]} ${currentYear}</th>`;
     });
 
-    let headerRow1 = `<tr class="bg-teal-600 text-white text-xs uppercase tracking-wide"><th colspan="7" class="px-4 py-2 text-center border-r-2 border-b border-gray-400 sticky-corner bg-teal-700 z-40 shadow-right shadow-bottom">TIMELINE PROGRES</th>${monthHeadersHtml}</tr>`;
+    let headerRow1 = `<tr class="bg-teal-600 text-white text-[10px] uppercase tracking-wide"><th colspan="4" class="px-4 py-2 text-center border-r-2 border-b border-gray-400 sticky-corner bg-teal-700 z-40 shadow-right shadow-bottom">DATA PROJECT</th>${monthHeadersHtml}</tr>`;
     
     let dateHeadersHtml = '';
     timelineDates.forEach(date => {
@@ -701,41 +715,126 @@ function renderTableTimeline() {
         dateHeadersHtml += `<th class="${classes}">${date.getDate()}</th>`;
     });
 
-    let headerRow2 = `<tr class="bg-gray-200 text-gray-600 text-[11px] uppercase font-bold sticky-header-top shadow-bottom z-30"><th class="px-3 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200">NO.</th><th class="px-3 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200" style="left:40px;">CUST</th><th class="px-3 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200" style="left:120px;">SALES</th><th class="px-3 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200" style="left:180px;">MULAI</th><th class="px-3 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200" style="left:250px;">SELESAI</th><th class="px-2 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200 text-center" style="left:320px;">WKT</th><th class="px-3 py-1.5 sticky-col-left z-30 shadow-bottom shadow-right bg-gray-200 border-r-2 border-gray-400" style="left:365px;">STATUS</th>${dateHeadersHtml}</tr>`;
+    let headerRow2 = `<tr class="bg-gray-200 text-gray-600 text-[10px] uppercase font-bold sticky-header-top shadow-bottom z-30">
+        <th class="px-2 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200">Aksi</th>
+        <th class="px-2 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200" style="left:50px;">PIC Klien</th>
+        <th class="px-2 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200" style="left:150px;">Nama Project</th>
+        <th class="px-2 py-1.5 sticky-col-left z-30 shadow-bottom shadow-right bg-gray-200 border-r-2 border-gray-400 text-center" style="left:270px; width:80px;">Status</th>
+        ${dateHeadersHtml}</tr>`;
+    
     document.getElementById('table-head').innerHTML = headerRow1 + headerRow2;
 
-    // TBODY
     let bodyHtml = '';
-    mockProjectsTimeline.forEach(group => {
-        bodyHtml += `<tr class="bg-gray-100 font-bold text-gray-800"><td colspan="7" class="px-3 py-1.5 sticky-col-left shadow-right z-10 bg-gray-100 border-r-2 border-gray-400 text-[13px] uppercase">- ${group.picGroup}</td><td colspan="${timelineDates.length}" class="bg-gray-50 border-b border-gray-200"></td></tr>`;
-        group.items.forEach(item => {
+    const activeProjects = currentProjectData.filter(p => p.Status !== 'Draft' && p.Status !== 'Batal');
+
+    if(activeProjects.length === 0) {
+        bodyHtml = `<tr><td colspan="${4 + timelineDates.length}" class="p-6 text-center text-gray-500 italic">Belum ada project aktif untuk ditampilkan.</td></tr>`;
+    } else {
+        activeProjects.forEach(item => {
+            const projTimeline = rawTimelineData.filter(t => t.Project_ID === item.Project_ID);
             const daily = {};
-            if(item.timeline) {
-                item.timeline.forEach(event => {
-                    let dCurr = new Date(event[0]), dEnd = new Date(event[1]), isFirst = true;
-                    while(dCurr <= dEnd) { daily[dCurr.toISOString().split('T')[0]] = { code: event[2], showNumber: isFirst }; isFirst = false; dCurr.setDate(dCurr.getDate()+1); }
-                });
-            }
+            projTimeline.forEach(event => {
+                if(!event.Tanggal_Mulai || !event.Tanggal_Selesai) return;
+                let dCurr = new Date(event.Tanggal_Mulai.split('T')[0]), dEnd = new Date(event.Tanggal_Selesai.split('T')[0]), isFirst = true;
+                while(dCurr <= dEnd) { daily[dCurr.toISOString().split('T')[0]] = { code: parseInt(event.Kode_Tahapan), showNumber: isFirst }; isFirst = false; dCurr.setDate(dCurr.getDate()+1); }
+            });
 
             let tCells = '';
             timelineDates.forEach(date => {
                 const dStr = date.toISOString().split('T')[0], sc = daily[dStr];
-                let content = '', cClasses = `text-center text-xs font-bold border-r border-gray-200 p-0 m-0 w-[28px] max-w-[28px] ${(dStr===targetDateStr && !sc) ? 'bg-yellow-50' : ''}`;
+                let content = '', cClasses = `text-center text-[10px] font-bold border-r border-gray-200 p-0 m-0 w-[28px] max-w-[28px] ${(dStr===targetDateStr && !sc) ? 'bg-yellow-50' : ''}`;
                 if(sc) {
                     const l = legendDataTimeline.find(x => x.code === sc.code);
                     cClasses += l ? ` ${l.bgClass} ${l.textClass}` : '';
-                    content = sc.showNumber ? date.getDate() : (sc.code===1 ? '<span class="text-yellow-600">-</span>' : (sc.code===6 ? '<span class="text-green-800/50">-</span>' : ''));
+                    content = sc.showNumber ? date.getDate() : (sc.code===1 ? '<span class="text-yellow-600/70">-</span>' : (sc.code===6 ? '<span class="text-green-900/40">-</span>' : ''));
                 }
                 tCells += `<td class="${cClasses}">${content}</td>`;
             });
 
-            const statColor = item.statusCode ? (() => { const l = legendDataTimeline.find(x => x.code === item.statusCode); return l ? `${l.bgClass} ${l.textClass}` : 'bg-white text-gray-700'; })() : 'bg-white text-gray-700';
-            
-            bodyHtml += `<tr class="hover:bg-blue-50 text-[12px] bg-white transition-colors"><td class="px-2 py-1.5 text-center sticky-col-left bg-inherit text-gray-500">${item.no}</td><td class="px-3 py-1.5 font-bold sticky-col-left bg-inherit" style="left:40px; min-width:80px;">${item.cust}</td><td class="px-3 py-1.5 sticky-col-left bg-inherit" style="left:120px; min-width:60px;">${item.sales}</td><td class="px-3 py-1.5 italic text-teal-700 sticky-col-left bg-inherit" style="left:180px;">${item.mulai}</td><td class="px-3 py-1.5 italic text-teal-700 sticky-col-left bg-inherit" style="left:250px;">${item.selesai}</td><td class="px-2 py-1.5 text-center font-semibold text-gray-600 sticky-col-left bg-inherit" style="left:320px;">${item.wkt}</td><td class="px-3 py-1.5 text-center font-bold sticky-col-left z-10 shadow-right border-r-2 border-gray-400 ${statColor}" style="left:365px; width:100px;">${item.status}</td>${tCells}</tr>`;
-        });
-    });
-    document.getElementById('table-body').innerHTML = bodyHtml;
+            const scColor = item.Status === "Sedang Berjalan" ? "text-blue-600" : (item.Status === "Selesai" ? "text-green-600" : "text-gray-500");
 
-    // Auto-scroll ke Hari Ini
-    setTimeout(() => { const tCell = document.querySelector('.today-highlight-header'); if(tCell) document.getElementById('table-container').scrollLeft = tCell.offsetLeft - 400; }, 100);
+            bodyHtml += `<tr class="hover:bg-blue-50 text-[11px] bg-white transition-colors">
+                <td class="px-2 py-1 text-center sticky-col-left bg-inherit"><button onclick="bukaModalTimeline('${item.Project_ID}')" class="bg-yellow-400 hover:bg-yellow-500 text-black px-2 py-1 rounded shadow text-[10px] font-bold"><i class="fas fa-edit"></i> Edit</button></td>
+                <td class="px-2 py-1 font-bold sticky-col-left bg-inherit text-indigo-800" style="left:50px; min-width:100px;">${item.Nama_PIC_Klien || '-'}</td>
+                <td class="px-2 py-1 sticky-col-left bg-inherit" style="left:150px; min-width:120px; white-space:normal; line-height:1.2;">${item.Nama_Project || '-'}</td>
+                <td class="px-2 py-1 text-center font-bold sticky-col-left z-10 shadow-right border-r-2 border-gray-400 ${scColor}" style="left:270px; width:80px;">${item.Status || '-'}</td>
+                ${tCells}
+            </tr>`;
+        });
+    }
+    
+    document.getElementById('table-body').innerHTML = bodyHtml;
+    setTimeout(() => { const tCell = document.querySelector('.today-highlight-header'); if(tCell) document.getElementById('table-container').scrollLeft = tCell.offsetLeft - 300; }, 100);
+}
+
+function injectModalTimeline() {
+    if (document.getElementById('modal-timeline-edit')) return;
+    
+    let rowsHtml = '';
+    legendDataTimeline.forEach(leg => {
+        rowsHtml += `<div class="flex items-center gap-2 mb-2 bg-gray-50 p-2 rounded border border-gray-200">
+            <div class="w-8 h-8 flex items-center justify-center rounded font-bold text-xs ${leg.bgClass} ${leg.textClass} shrink-0">${leg.code}</div>
+            <div class="w-1/3 text-sm font-semibold text-gray-700">${leg.label}</div>
+            <div class="w-1/3"><input type="date" id="tl-start-${leg.code}" class="w-full border p-1.5 rounded text-sm focus:outline-teal-500"></div>
+            <div class="w-1/3"><input type="date" id="tl-end-${leg.code}" class="w-full border p-1.5 rounded text-sm focus:outline-teal-500"></div>
+        </div>`;
+    });
+
+    const modalHtml = `
+    <div id="modal-timeline-edit" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-[100] no-print">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative max-h-[90vh] flex flex-col">
+            <h3 class="text-lg font-bold text-gray-800 mb-2 border-b pb-2"><i class="fas fa-calendar-alt text-teal-600 mr-2"></i> Edit Timeline Tahapan</h3>
+            <div class="text-sm font-bold text-indigo-700 mb-4" id="modal-tl-proj-name"></div>
+            <input type="hidden" id="modal-tl-proj-id">
+            
+            <div class="flex-1 overflow-y-auto pr-2 mb-4">
+                <div class="flex text-xs font-bold text-gray-500 mb-2 px-2"><div class="w-1/3 ml-10">Tahapan</div><div class="w-1/3">Tgl Mulai</div><div class="w-1/3">Tgl Selesai</div></div>
+                ${rowsHtml}
+                <div class="text-[11px] text-gray-500 italic mt-2">* Kosongkan tanggal pada tahapan yang belum/tidak dikerjakan.</div>
+            </div>
+            
+            <div class="flex justify-end gap-2 border-t pt-4">
+                <button onclick="document.getElementById('modal-timeline-edit').style.display='none'" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded shadow">Batal</button>
+                <button onclick="simpanTimeline()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded shadow font-bold">Simpan Jadwal</button>
+            </div>
+        </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function bukaModalTimeline(pId) {
+    const proj = currentProjectData.find(p => p.Project_ID === pId);
+    document.getElementById('modal-tl-proj-name').innerText = `${proj.Nama_PIC_Klien} - ${proj.Nama_Project}`;
+    document.getElementById('modal-tl-proj-id').value = pId;
+
+    legendDataTimeline.forEach(l => { document.getElementById(`tl-start-${l.code}`).value = ''; document.getElementById(`tl-end-${l.code}`).value = ''; });
+
+    const existing = rawTimelineData.filter(t => t.Project_ID === pId);
+    existing.forEach(t => {
+        if(document.getElementById(`tl-start-${t.Kode_Tahapan}`)) {
+            document.getElementById(`tl-start-${t.Kode_Tahapan}`).value = t.Tanggal_Mulai ? t.Tanggal_Mulai.split('T')[0] : '';
+            document.getElementById(`tl-end-${t.Kode_Tahapan}`).value = t.Tanggal_Selesai ? t.Tanggal_Selesai.split('T')[0] : '';
+        }
+    });
+
+    document.getElementById('modal-timeline-edit').style.display = 'flex';
+}
+
+async function simpanTimeline() {
+    const pId = document.getElementById('modal-tl-proj-id').value;
+    let dataToSave = [];
+    
+    legendDataTimeline.forEach(l => {
+        const tStart = document.getElementById(`tl-start-${l.code}`).value, tEnd = document.getElementById(`tl-end-${l.code}`).value;
+        if(tStart) dataToSave.push(["TML-" + pId + "-" + l.code + "-" + new Date().getTime(), pId, l.code, tStart, tEnd || tStart]); 
+    });
+
+    document.getElementById('modal-timeline-edit').style.display = 'none'; showLoading("Menyimpan Jadwal...");
+    
+    const res = await apiPost({ action: 'saveTimelineBatch', projectId: pId, rows: dataToSave });
+    if(res.success) {
+        const timeRes = await apiGet('getSheetData', '&sheetName=Data_Timeline');
+        if(timeRes.success) { rawTimelineData = timeRes.data; renderTableTimeline(); }
+        hideLoading();
+    } else { hideLoading(); alert("Gagal menyimpan Timeline: " + res.message); }
 }
