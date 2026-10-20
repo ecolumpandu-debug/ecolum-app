@@ -7,8 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- MEMANGGIL FILE CSS EKSTERNAL -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-gray-100">
@@ -42,7 +40,7 @@
 
                 <div class="px-5 py-3 text-xs text-gray-400 uppercase font-bold tracking-wider bg-gray-900 mt-2"><i class="fas fa-project-diagram mr-1"></i> Data Project</div>
                 <a href="#" onclick="showMenu('Project')" class="block pl-8 pr-5 py-2.5 hover:bg-gray-700 menu-item"><i class="fas fa-list w-5 text-gray-400"></i> Daftar Project</a>
-                <a href="#" onclick="showMenu('Timeline_Produksi')" class="block pl-8 pr-5 py-2.5 hover:bg-gray-700 menu-item"><i class="fas fa-calendar-alt w-5 text-yellow-400"></i> Timeline Produksi</a>
+                <a href="#" onclick="showMenu('Timeline')" class="block pl-8 pr-5 py-2.5 hover:bg-gray-700 menu-item"><i class="fas fa-calendar-alt w-5 text-yellow-400"></i> Timeline</a>
                 <a href="#" onclick="showMenu('RAP_Awal')" class="block pl-8 pr-5 py-2.5 hover:bg-gray-700 menu-item"><i class="fas fa-file-invoice-dollar w-5 text-gray-400"></i> RAP Awal</a>
                 <a href="#" onclick="showMenu('RAP_Belanja')" class="block pl-8 pr-5 py-2.5 hover:bg-gray-700 menu-item"><i class="fas fa-shopping-cart w-5 text-gray-400"></i> RAP Belanja</a>
                 <a href="#" onclick="showMenu('RAP_Final')" class="block pl-8 pr-5 py-2.5 hover:bg-gray-700 menu-item"><i class="fas fa-file-contract w-5 text-gray-400"></i> RAP Final</a>
@@ -53,7 +51,6 @@
                 <a href="#" onclick="showMenu('Master_Operasional')" class="block pl-8 pr-5 py-2.5 hover:bg-gray-700 menu-item"><i class="fas fa-truck w-5 text-gray-400"></i> Operasional</a>
             </div>
 
-            <!-- PROFIL USER & LOGOUT -->
             <div class="p-4 border-t border-gray-700 bg-gray-900">
                 <div class="flex items-center mb-3">
                     <div id="user-initial" class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-inner mr-3">U</div>
@@ -68,16 +65,11 @@
 
         <div class="flex-1 flex flex-col bg-gray-100">
             <div id="header-top" class="bg-white p-4 shadow flex justify-between items-center no-print"><h1 id="header-title" class="text-xl font-bold text-gray-700 uppercase tracking-wide">Dashboard</h1></div>
-            <!-- WADAH UTAMA KONTEN -->
             <div class="p-6 flex-1 overflow-y-auto" id="main-content"></div>
         </div>
     </div>
 
-    <!-- ========================================================== -->
-    <!-- KUMPULAN MODAL (POP-UP) DARI SEMUA MENU                    -->
-    <!-- ========================================================== -->
-
-    <!-- Modal Data Master -->
+    <!-- MODAL DATA MASTER -->
     <div id="modal-master" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50 overflow-y-auto no-print">
         <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl my-8">
             <h3 id="modal-master-title" class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Form Data Master</h3>
@@ -90,7 +82,7 @@
         </div>
     </div>
 
-    <!-- Modal Form Project -->
+    <!-- MODAL PROJECT -->
     <div id="modal-Project" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50 overflow-y-auto no-print">
         <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl my-8">
             <h3 id="modal-title-project" class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Form Project</h3>
@@ -115,7 +107,7 @@
         </div>
     </div>
 
-    <!-- Modal Input Stok -->
+    <!-- MODAL STOK -->
     <div id="modal-stok" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50 no-print">
         <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
             <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Input Transaksi Stok</h3>
@@ -148,7 +140,7 @@
         </div>
     </div>
 
-    <!-- Modal RAP Final (Jasa/Ops Manual) -->
+    <!-- MODAL RAP FINAL -->
     <div id="modal-jasa-ops" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50 no-print">
         <div class="bg-white p-6 rounded shadow w-96">
             <h3 class="font-bold mb-4" id="modal-title-jo">Input Jasa/Ops Manual Aktual</h3>
