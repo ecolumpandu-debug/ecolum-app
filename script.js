@@ -611,7 +611,7 @@ const legendDataTimeline = [
     { code: 2, label: 'Meeting', bgClass: 'bg-emerald-800', textClass: 'text-white' },
     { code: 3, label: 'Belanja', bgClass: 'bg-slate-800', textClass: 'text-white' },
     { code: 4, label: 'Produksi', bgClass: 'bg-red-600', textClass: 'text-white' },
-    { code: 5, label: 'Jadwal QC 1', bgClass: 'bg-teal-700', textClass: 'text-white' },
+    { code: 5, label: 'QC', bgClass: 'bg-teal-700', textClass: 'text-white' },
     { code: 6, label: 'Instalasi', bgClass: 'bg-green-600', textClass: 'text-white' },
     { code: 7, label: 'Sipil', bgClass: 'bg-orange-500', textClass: 'text-white' }, 
     { code: 8, label: 'Selesai', bgClass: 'bg-lime-400', textClass: 'text-black' } 
@@ -629,7 +629,6 @@ async function renderMenuTimeline() {
         currentProjectData = projRes.data;
         rawTimelineData = timeRes.data;
         
-        // Peningkatan UI: Menggunakan flex responsif untuk tampilan layar kecil/mobile
         let html = `
         <div class="bg-white border-b shadow-sm p-4 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-4 rounded no-print">
             <div class="w-full xl:w-1/2">
@@ -722,7 +721,7 @@ function renderTableTimeline() {
         <th class="px-2 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200">Aksi</th>
         <th class="px-2 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200" style="left:50px;">PIC Klien</th>
         <th class="px-2 py-1.5 sticky-col-left z-30 shadow-bottom bg-gray-200" style="left:150px;">Nama Project</th>
-        <th class="px-2 py-1.5 sticky-col-left z-30 shadow-bottom shadow-right bg-gray-200 border-r-2 border-gray-400 text-center" style="left:270px; width:80px;">Status</th>
+        <th class="px-2 py-1.5 sticky-col-left z-30 shadow-bottom shadow-right bg-gray-200 border-r-2 border-gray-400 text-center" style="left:270px; width:85px;">Status</th>
         ${dateHeadersHtml}</tr>`;
     
     document.getElementById('table-head').innerHTML = headerRow1 + headerRow2;
@@ -742,16 +741,39 @@ function renderTableTimeline() {
                 while(dCurr <= dEnd) { daily[dCurr.toISOString().split('T')[0]] = { code: parseInt(event.Kode_Tahapan), showNumber: isFirst }; isFirst = false; dCurr.setDate(dCurr.getDate()+1); }
             });
 
-            // LOGIKA STATUS OTOMATIS: Berubah mengikuti kegiatan apa yang dijadwalkan pada hari ini
+            // LOGIKA STATUS OTOMATIS: Berubah mengikuti kegiatan apa yang dijadwalkan pada HARI INI
             let currentStageLabel = (item.Status || "MENUNGGU").toUpperCase();
-            let currentStageColor = item.Status === "Sedang Berjalan" ? "bg-blue-50 text-blue-700" : (item.Status === "Selesai" ? "bg-green-50 text-green-700" : "bg-gray-50 text-gray-500");
+            let currentStageColor = item.Status === "Selesai" ? "bg-lime-400 text-black" : "bg-gray-100 text-gray-500";
 
-            if (item.Status === "Sedang Berjalan" && daily[targetDateStr]) {
-                const sc = daily[targetDateStr];
-                const leg = legendDataTimeline.find(x => x.code === sc.code);
-                if (leg) {
-                    currentStageLabel = leg.label.toUpperCase();
-                    currentStageColor = `${leg.bgClass} ${leg.textClass}`;
+            if (item.Status === "Sedang Berjalan" || item.Status === "Perencanaan") {
+                if (projTimeline.length > 0) {
+                    let todayTime = new Date(targetDateStr).getTime();
+                    let latestStageCode = 0;
+                    let isOngoing = false;
+
+                    // Cari tahapan yang sedang berjalan hari ini, atau tahapan terakhir yang sudah dilewati
+                    projTimeline.forEach(t => {
+                        let start = new Date(t.Tanggal_Mulai.split('T')[0]).getTime();
+                        let end = new Date(t.Tanggal_Selesai.split('T')[0]).getTime();
+                        let code = parseInt(t.Kode_Tahapan);
+
+                        if (todayTime >= start && todayTime <= end) {
+                            if(code > latestStageCode) { latestStageCode = code; isOngoing = true; } 
+                        } else if (todayTime > end) {
+                            if(code > latestStageCode && !isOngoing) latestStageCode = code; 
+                        }
+                    });
+
+                    if (latestStageCode > 0) {
+                        const leg = legendDataTimeline.find(x => x.code === latestStageCode);
+                        if (leg) {
+                            currentStageLabel = leg.label;
+                            currentStageColor = `${leg.bgClass} ${leg.textClass}`;
+                        }
+                    } else {
+                        currentStageLabel = "Menunggu Mulai";
+                        currentStageColor = "bg-blue-50 text-blue-600";
+                    }
                 }
             }
 
@@ -771,13 +793,14 @@ function renderTableTimeline() {
                 <td class="px-2 py-1 text-center sticky-col-left bg-inherit"><button onclick="bukaModalTimeline('${item.Project_ID}')" class="bg-yellow-400 hover:bg-yellow-500 text-black px-2 py-1 rounded shadow text-[10px] font-bold"><i class="fas fa-edit"></i> Edit</button></td>
                 <td class="px-2 py-1 font-bold sticky-col-left bg-inherit text-indigo-800" style="left:50px; min-width:100px;">${item.Nama_PIC_Klien || '-'}</td>
                 <td class="px-2 py-1 sticky-col-left bg-inherit" style="left:150px; min-width:120px; white-space:normal; line-height:1.2;">${item.Nama_Project || '-'}</td>
-                <td class="px-1 py-1 text-center font-bold sticky-col-left z-10 shadow-right border-r-2 border-gray-400 ${currentStageColor} text-[9px] leading-tight" style="left:270px; width:80px; white-space:normal;">${currentStageLabel}</td>
+                <td class="px-1 py-1 text-center font-bold sticky-col-left z-10 shadow-right border-r-2 border-gray-400 ${currentStageColor} text-[10px] leading-tight" style="left:270px; width:85px; white-space:normal;">${currentStageLabel}</td>
                 ${tCells}
             </tr>`;
         });
     }
     
     document.getElementById('table-body').innerHTML = bodyHtml;
+    // Auto Scroll ke Hari Ini
     setTimeout(() => { const tCell = document.querySelector('.today-highlight-header'); if(tCell) document.getElementById('table-container').scrollLeft = tCell.offsetLeft - 300; }, 100);
 }
 
